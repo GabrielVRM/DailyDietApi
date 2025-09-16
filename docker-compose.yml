@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+  db:
+    image: bitnami/postgresql:latest
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRESQL_USERNAME=admin
+      - POSTGRESQL_PASSWORD=admin@123
+      - POSTGRESQL_DATABASE=dailydietapi
+    volumes:
+      - pg-data:/bitnami/postgresql
+
+volumes:
+  pg-data:
