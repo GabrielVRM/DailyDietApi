@@ -1,14 +1,16 @@
 import knex from "knex";
 import type { Knex } from "knex";
+import "dotenv/config";
+import env from "../env/index.js";
 
 export const config: Knex.Config = {
   client: "pg",
   version: "17.6",
   connection: {
     port: 5432,
-    user: "admin",
-    password: "admin@123",
-    database: "dailydietapi",
+    user: env.data?.USER!,
+    password: env.data?.PASSWORD!,
+    database: env.data?.DATABASE!,
   },
   migrations: {
     extension: "ts",
