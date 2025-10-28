@@ -1,7 +1,7 @@
 import knex from "knex";
 import type { Knex } from "knex";
 import "dotenv/config";
-import env from "../env/index.js";
+import env from "../src/env/index.js";
 
 export const config: Knex.Config = {
   client: "pg",
@@ -14,7 +14,7 @@ export const config: Knex.Config = {
   },
   migrations: {
     extension: "ts",
-    directory: "./src/db/migrations",
+    directory: "./db/migrations",
   },
 };
 export const db = knex(config);

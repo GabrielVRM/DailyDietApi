@@ -1,2 +1,2 @@
-import { config } from "./src/db/index.js";
+import { config } from "./db/index.js";
 export default config;
