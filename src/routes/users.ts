@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { db } from "../../db/index.js";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcrypt";
+import z from "zod";
 
 interface UserCreateBody {
   name: string;
@@ -10,23 +11,34 @@ interface UserCreateBody {
 }
 export async function usersRoutes(app: FastifyInstance) {
   app.get("/", async (req, reply) => {
-    const getUsers = await db.select().from("users").returning("*");
+    const getUsers = await db.select().from("user").returning("*");
+
+    // <-Cookies contexto entre requisições ->
+
     reply.status(201).send(getUsers);
   });
 
   app.post<{ Body: UserCreateBody }>("/", async (req, reply) => {
-    const { name, password, email } = req.body;
-    let hashPassword = "";
-    if (password) {
-      hashPassword = bcrypt.hashSync(password, 10);
-    }
-    await db("users").insert({
-      id: uuidv4(),
-      username: name,
-      password_hash: hashPassword,
-      email: email,
-    });
+    try {
+      const { name, password, email } = req.body;
+      let hashPassword = "";
+      if (password) {
+        hashPassword = bcrypt.hashSync(password, 10);
+      }
+      await db("user").insert({
+        id: uuidv4(),
+        username: name,
+        password_hash: hashPassword,
+        email: email,
+      });
 
-    reply.status(201).send("created users with successful");
+      reply.status(201).send("created users with successful");
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        console.log(error);
+        error.issues;
+      }
+      reply.status(400).send("Error " + error.detail);
+    }
   });
 }
