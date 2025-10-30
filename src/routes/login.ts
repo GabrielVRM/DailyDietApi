@@ -45,7 +45,7 @@ export function loginRoutes(app: FastifyInstance) {
       // Cookies para contexto entre requisições
       reply.cookie("auth", login.id, {
         path: "/",
-        maxAge: 60,
+        maxAge: 60 * 60,
       });
 
       reply.status(201).send("Authenticate whit success ✅");

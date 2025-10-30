@@ -16,6 +16,7 @@ export function mealsRoutes(app: FastifyInstance) {
       const createSchemaTypeMeals = z.object({
         description: z.string(),
         name: z.string(),
+        isDiet: z.boolean(),
       });
       const result = createSchemaTypeMeals.safeParse(req.body);
       if (result.error) {
@@ -23,9 +24,10 @@ export function mealsRoutes(app: FastifyInstance) {
       }
       await db("meals").insert({
         id: uuidv4(),
-        usuario_id: "8eaf6758-cc86-40f5-909d-c1e2e2cebd24",
+        usuario_id: authUser,
         name: result.data?.name,
         description: result.data?.description,
+        isDiet: result.data?.isDiet,
       });
       reply.status(201).send("meals created with successful");
     } catch (error) {
@@ -43,13 +45,13 @@ export function mealsRoutes(app: FastifyInstance) {
     if (!authUser) {
       throw new Error("Você precisa estar logado, por favor faça o login! ❌");
     }
-    const users = await db
+    const meals = await db
       .select("*")
       .from("meals")
       .where({ usuario_id: authUser })
       .returning("*");
 
-    reply.status(201).send({ users });
+    reply.status(201).send({ meals });
   });
 
   app.get("/:id", async (req, reply) => {
@@ -81,5 +83,28 @@ export function mealsRoutes(app: FastifyInstance) {
       .update({ name, description, isDiet });
 
     reply.status(201).send({ users });
+  });
+
+  app.delete("/:id", async (req, reply) => {
+    try {
+      let authUser = req.cookies.auth;
+
+      const { id } = req.params;
+      if (!authUser) {
+        throw new Error(
+          "Você precisa estar logado, por favor faça o login! ❌"
+        );
+      }
+      const meals = await db("meals")
+        .where({ id: id, usuario_id: authUser })
+        .del();
+      console.log(meals);
+      if (!meals) {
+        throw new Error("essa refeição não existe");
+      }
+      reply.status(201).send("refeição foi deletada com sucesso ✅");
+    } catch (erro) {
+      reply.status(400).send(erro);
+    }
   });
 }
