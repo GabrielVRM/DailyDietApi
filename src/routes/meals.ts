@@ -1,7 +1,8 @@
 import type { FastifyInstance } from "fastify";
 import { db } from "../../db/index.js";
 import { v4 as uuidv4 } from "uuid";
-import z, { array, string, success } from "zod";
+import z, { array, number, string, success } from "zod";
+import type { InKeyword } from "typescript";
 
 export function mealsRoutes(app: FastifyInstance) {
   app.post("/", async (req, reply) => {
@@ -59,7 +60,7 @@ export function mealsRoutes(app: FastifyInstance) {
     if (!authUser) {
       throw new Error("Você precisa estar logado, por favor faça o login! ❌");
     }
-    const { id } = req.params;
+    const { id }: any = req.params;
     console.log({ id, authUser });
     const users = await db
       .select("*")
@@ -86,6 +87,7 @@ export function mealsRoutes(app: FastifyInstance) {
       total: 0,
       isDiet: 0,
       isNotDiet: 0,
+      isVeryGoodSequencia: 0,
     };
     mealsMetrics.reduce(
       (acc, current) =>
@@ -93,12 +95,25 @@ export function mealsRoutes(app: FastifyInstance) {
       0
     );
     let n = 0;
+
     mealsMetrics.map((current, index, array) => {
       const previous = array[index - n]; // pega o anterior, se existir
       n = n === 0 ? n + 1 : n;
 
       if (previous) {
-        console.log(`Anterior: ${previous.isDiet}, Atual: ${current.isDiet}`);
+        if (previous.isDiet === true) {
+          if (index > 1 && previous.isDiet === true) {
+            console.log(
+              `Anterior: ${previous.isDiet} id-${index}, Atual: ${current.isDiet}  id-${index}`
+            );
+            metrics.isVeryGoodSequencia++;
+          }
+        } else if (current.isDiet === false) {
+          return;
+        }
+        console.log(
+          `Anterior: ${previous.isDiet} id-${index}, Atual: ${current.isDiet}  id-${index}`
+        );
       }
     });
 
@@ -108,8 +123,8 @@ export function mealsRoutes(app: FastifyInstance) {
   app.put("/:id", async (req, reply) => {
     let authUser = req.cookies.auth;
 
-    const { id } = req.params;
-    const { name, description, isDiet } = req.body;
+    const { id }: any = req.params;
+    const { name, description, isDiet }: any = req.body;
     console.log(name);
     if (!authUser) {
       throw new Error("Você precisa estar logado, por favor faça o login! ❌");
