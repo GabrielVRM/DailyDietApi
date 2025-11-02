@@ -12,9 +12,19 @@ interface UserCreateBody {
 export async function usersRoutes(app: FastifyInstance) {
   app.get("/", async (req, reply) => {
     const getUsers = await db.select().from("user").returning("*");
+    reply.status(201).send(getUsers);
+  });
 
-    // <-Cookies contexto entre requisições ->
-
+  app.get("/:id", async (req, reply) => {
+    const { id }: any = req.params;
+    if (!id) {
+      throw new Error("erro: por favor insira ");
+    }
+    const getUsers = await db
+      .select()
+      .where("id", id)
+      .from("user")
+      .returning("*");
     reply.status(201).send(getUsers);
   });
 

@@ -102,18 +102,13 @@ export function mealsRoutes(app: FastifyInstance) {
 
       if (previous) {
         if (previous.isDiet === true) {
-          if (index > 1 && previous.isDiet === true) {
-            console.log(
-              `Anterior: ${previous.isDiet} id-${index}, Atual: ${current.isDiet}  id-${index}`
-            );
-            metrics.isVeryGoodSequencia++;
-          }
+          console.log(
+            `Anterior: ${previous.isDiet} id-${index}, Atual: ${current.isDiet}  id-${index}`
+          );
+          metrics.isVeryGoodSequencia++;
         } else if (current.isDiet === false) {
           return;
         }
-        console.log(
-          `Anterior: ${previous.isDiet} id-${index}, Atual: ${current.isDiet}  id-${index}`
-        );
       }
     });
 
