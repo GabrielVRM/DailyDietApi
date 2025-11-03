@@ -1,42 +1,18 @@
-"use strict";
-var __create = Object.create;
-var __defProp = Object.defineProperty;
-var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
-var __getOwnPropNames = Object.getOwnPropertyNames;
-var __getProtoOf = Object.getPrototypeOf;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __copyProps = (to, from, except, desc) => {
-  if (from && typeof from === "object" || typeof from === "function") {
-    for (let key of __getOwnPropNames(from))
-      if (!__hasOwnProp.call(to, key) && key !== except)
-        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
-  }
-  return to;
-};
-var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__getProtoOf(mod)) : {}, __copyProps(
-  // If the importer is in node compatibility mode or this is not an ESM
-  // file that has been converted to a CommonJS file using a Babel-
-  // compatible transform (i.e. "__esModule" has not been set), then set
-  // "default" to the CommonJS "module.exports" for node compatibility.
-  isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
-  mod
-));
-
 // src/server.ts
-var import_fastify = __toESM(require("fastify"), 1);
+import fastify from "fastify";
 
 // db/index.ts
-var import_knex = __toESM(require("knex"), 1);
-var import_config2 = require("dotenv/config");
+import knex from "knex";
+import "dotenv/config";
 
 // src/env/index.ts
-var import_config = require("dotenv/config");
-var import_zod = require("zod");
-var envSchema = import_zod.z.object({
-  DATABASE: import_zod.z.string(),
-  USER: import_zod.z.string(),
-  PASSWORD: import_zod.z.string(),
-  PORT: import_zod.z.coerce.number().default(3e3)
+import "dotenv/config";
+import { z } from "zod";
+var envSchema = z.object({
+  DATABASE: z.string(),
+  USER: z.string(),
+  PASSWORD: z.string(),
+  PORT: z.coerce.number().default(3e3)
 });
 var env = envSchema.safeParse(process.env);
 if (env.success === false) {
@@ -60,12 +36,12 @@ var config = {
     directory: "./db/migrations"
   }
 };
-var db = (0, import_knex.default)(config);
+var db = knex(config);
 
 // src/routes/users.ts
-var import_uuid = require("uuid");
-var import_bcrypt = __toESM(require("bcrypt"), 1);
-var import_zod2 = __toESM(require("zod"), 1);
+import { v4 as uuidv4 } from "uuid";
+import bcrypt from "bcrypt";
+import z2 from "zod";
 async function usersRoutes(app2) {
   app2.get("/", async (req, reply) => {
     const getUsers = await db.select().from("user").returning("*");
@@ -84,17 +60,17 @@ async function usersRoutes(app2) {
       const { name, password, email } = req.body;
       let hashPassword = "";
       if (password) {
-        hashPassword = import_bcrypt.default.hashSync(password, 10);
+        hashPassword = bcrypt.hashSync(password, 10);
       }
       await db("user").insert({
-        id: (0, import_uuid.v4)(),
+        id: uuidv4(),
         username: name,
         password_hash: hashPassword,
         email
       });
       reply.status(201).send("created users with successful");
     } catch (error) {
-      if (error instanceof import_zod2.default.ZodError) {
+      if (error instanceof z2.ZodError) {
         console.log(error);
         error.issues;
       }
@@ -104,8 +80,8 @@ async function usersRoutes(app2) {
 }
 
 // src/routes/meals.ts
-var import_uuid2 = require("uuid");
-var import_zod3 = __toESM(require("zod"), 1);
+import { v4 as uuidv42 } from "uuid";
+import z3 from "zod";
 
 // src/middlewares/check-session-id-exists.ts
 function checkSessionUser(req, reply, done) {
@@ -122,17 +98,17 @@ function mealsRoutes(app2) {
     var _a2, _b2, _c2;
     try {
       let authUser = req.cookies.auth;
-      const createSchemaTypeMeals = import_zod3.default.object({
-        description: import_zod3.default.string(),
-        name: import_zod3.default.string(),
-        isDiet: import_zod3.default.boolean()
+      const createSchemaTypeMeals = z3.object({
+        description: z3.string(),
+        name: z3.string(),
+        isDiet: z3.boolean()
       });
       const result = createSchemaTypeMeals.safeParse(req.body);
       if (result.error) {
         return reply.status(422).send({ message: "Dados inv\xE1lidos", errors: result.error.issues });
       }
       await db("meals").insert({
-        id: (0, import_uuid2.v4)(),
+        id: uuidv42(),
         usuario_id: authUser,
         name: (_a2 = result.data) == null ? void 0 : _a2.name,
         description: (_b2 = result.data) == null ? void 0 : _b2.description,
@@ -141,7 +117,7 @@ function mealsRoutes(app2) {
       reply.status(201).send("meals created with successful");
     } catch (error) {
       console.log(error);
-      if (error instanceof import_zod3.default.ZodError) {
+      if (error instanceof z3.ZodError) {
         console.log(error);
         error.issues;
       }
@@ -202,8 +178,8 @@ function mealsRoutes(app2) {
   app2.delete("/", { preHandler: checkSessionUser }, async (req, reply) => {
     try {
       let authUser = req.cookies.auth;
-      const schemaBodyDeleteMeals = import_zod3.default.object({
-        id: import_zod3.default.array(import_zod3.default.string())
+      const schemaBodyDeleteMeals = z3.object({
+        id: z3.array(z3.string())
       });
       const result = schemaBodyDeleteMeals.safeParse(req.body);
       if (!result.success) {
@@ -222,15 +198,15 @@ function mealsRoutes(app2) {
 }
 
 // src/routes/login.ts
-var import_zod4 = __toESM(require("zod"), 1);
-var import_bcrypt2 = require("bcrypt");
+import z4 from "zod";
+import { compare } from "bcrypt";
 function loginRoutes(app2) {
   app2.post("/", async (req, reply) => {
     var _a2;
     try {
-      const createSchemaTypeMeals = import_zod4.default.object({
-        email: import_zod4.default.string(),
-        password: import_zod4.default.string()
+      const createSchemaTypeMeals = z4.object({
+        email: z4.string(),
+        password: z4.string()
       });
       const result = createSchemaTypeMeals.safeParse(req.body);
       const login = await db().select("*").from("user").where({
@@ -238,7 +214,7 @@ function loginRoutes(app2) {
       }).returning("*").first();
       let comparePassword;
       if (login) {
-        comparePassword = await (0, import_bcrypt2.compare)(
+        comparePassword = await compare(
           result.data.password,
           login.password_hash
         );
@@ -253,7 +229,7 @@ function loginRoutes(app2) {
       });
       reply.status(201).send("Authenticate whit success \u2705");
     } catch (error) {
-      if (error instanceof import_zod4.default.ZodError) {
+      if (error instanceof z4.ZodError) {
         error.issues;
       }
       reply.status(400).send("Error " + error);
@@ -262,9 +238,9 @@ function loginRoutes(app2) {
 }
 
 // src/server.ts
-var import_cookie = __toESM(require("@fastify/cookie"), 1);
-var app = (0, import_fastify.default)();
-app.register(import_cookie.default);
+import fastifyCookie from "@fastify/cookie";
+var app = fastify();
+app.register(fastifyCookie);
 app.register(loginRoutes, {
   prefix: "auth"
 });
