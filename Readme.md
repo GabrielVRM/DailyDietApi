@@ -49,13 +49,10 @@ OBS: o NPX vem junto do npm e é um executavel de binarios das bibliotecas que i
 # Regra de Negocio
 
 ### Regras da aplicação
-
 [X] Deve ser possível criar um usuário
 [x] Deve ser possível identificar o usuário entre as requisições
 [x] Deve ser possível registrar uma refeição feita, com as seguintes informações:
-
-    *As refeições devem ser relacionadas a um usuário.*
-
+   As refeições devem ser relacionadas a um usuário.
     - Nome
     - Descrição
     - Data e Hora
